@@ -1,0 +1,14 @@
+name: Evaluate a new challenge entry
+run-name: ${{ github.actor }} is evaluating a new challenge entry
+on: 
+  issues:
+    types:
+      - opened
+jobs:
+  IronTract-Evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Julia environment
+        uses: julia-actions/setup-julia@v1.9.4
+      - name: Run
+        run: julia --project src/evaluate.jl
