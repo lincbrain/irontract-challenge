@@ -12,6 +12,39 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.base.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+          
+      - name: Cache ground truth data
+        uses: actions/cache@v3
+        id: gt-cache
+        with:
+          path: data  # local folder to store data
+          key: ${{ runner.os }}-ground-truth-v1
+
+      - name: Download DANDI Data
+        if: steps.gt-cache.outputs.cache-hit != 'true'
+        env:
+          DANDI_API_KEY: ${{ secrets.DANDI_API_KEY }}
+        working-directory: ./data
+        run: |
+          dandi download https://dandiarchive.org/dandiset/001288
+          dandi download https://dandiarchive.org/dandiset/001289
           
       - name: Identify PR author
         id: identify_author
@@ -26,26 +59,9 @@ jobs:
           git fetch pr-fork ${{ github.event.pull_request.head.ref }}:pr-branch
           # Overwrite only the submissions folder with the PR content
           git checkout pr-branch -- submissions
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'
-
-      - name: Install DANDI
-        run: |
-          pip install -r requirements.txt
-
-      - name: Download DANDI Data
-        env:
-          DANDI_API_KEY: ${{ secrets.DANDI_API_KEY }}
-        working-directory: ./data
-        run: |
-          dandi download https://dandiarchive.org/dandiset/001288
-          dandi download https://dandiarchive.org/dandiset/001289
-      
       - name: Run Python script
-        run: python scripts/evaluate.py \ 
+        run: |
+          python scripts/evaluate.py \ 
              --mask-file data/001288/derivatives/micr/sub-MR243/sub-MR243_sample-brain_stain-FS_desc-mask.nii.gz \ 
              --gt-file data/001288/derivatives/micr/sub-MR243/sub-MR243_sample-brain_stain-FS_desc-tracer.nii.gz \ 
              --submission-folder submissions/MR243 \ 
