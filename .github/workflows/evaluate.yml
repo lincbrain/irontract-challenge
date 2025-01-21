@@ -1,14 +1,44 @@
 name: Evaluate a new challenge entry
 run-name: ${{ github.actor }} is evaluating a new challenge entry
-on: 
-  issues:
-    types:
-      - opened
+on:
+  pull_request_target:
+    branches: [ "main" ]
+
 jobs:
-  IronTract-Evaluate:
+  check-changed-files:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Julia environment
-        uses: julia-actions/setup-julia@v1.9.4
-      - name: Run
-        run: julia --project src/evaluate.jl
+      - name: Check out base repo
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+
+      - name: Fetch PR submissions
+        run: |
+          # GitHub automatically sets 'github.event.pull_request.head.sha' to the commit in the fork
+          # You can fetch just the 'submissions/' folder to avoid trusting code in e.g. scripts/
+          
+          git remote add pr-fork ${{ github.event.pull_request.head.repo.clone_url }}
+          git fetch pr-fork ${{ github.event.pull_request.head.ref }}:pr-branch
+          # Overwrite only the submissions folder with the PR content
+          git checkout pr-branch -- submissions
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install DANDI
+        run: |
+          pip install -r requirements.txt
+
+      - name: Download DANDI Data
+        env:
+          DANDI_API_KEY: ${{ secrets.DANDI_API_KEY }}
+        working-directory: ./data
+        run: |
+          dandi download https://dandiarchive.org/dandiset/001288
+          dandi download https://dandiarchive.org/dandiset/001289
+      
+      - name: Run Python script
+        run: python scripts/evaluate.py --mask-file data/001288/derivatives/micr/sub-MR243/sub-MR243_sample-brain_stain-FS_desc-mask.nii.gz --gt-file data/001288/derivatives/micr/sub-MR243/sub-MR243_sample-brain_stain-FS_desc-tracer.nii.gz --submission-folder submissions/MR243
