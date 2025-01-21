@@ -11,8 +11,9 @@ jobs:
       - name: Check out base repo
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.base.sha }}
-
+          # ref: ${{ github.event.pull_request.base.sha }}
+          ref: 'main'
+          
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
