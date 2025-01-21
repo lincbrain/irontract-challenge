@@ -61,11 +61,11 @@ jobs:
           git checkout pr-branch -- submissions
       - name: Run Python script
         run: |
-          python scripts/evaluate.py \ 
-             --mask-file data/001288/derivatives/micr/sub-MR243/sub-MR243_sample-brain_stain-FS_desc-mask.nii.gz \ 
-             --gt-file data/001288/derivatives/micr/sub-MR243/sub-MR243_sample-brain_stain-FS_desc-tracer.nii.gz \ 
-             --submission-folder submissions/MR243 \ 
-             --output-plot roc_curve.png \ 
+          python scripts/evaluate.py \
+             --mask-file data/001288/derivatives/micr/sub-MR243/sub-MR243_sample-brain_stain-FS_desc-mask.nii.gz \
+             --gt-file data/001288/derivatives/micr/sub-MR243/sub-MR243_sample-brain_stain-FS_desc-tracer.nii.gz \
+             --submission-folder submissions/MR243 \
+             --output-plot roc_curve.png \
              --output-stats results.txt
       - name: Commit results to the repo
         run: |
