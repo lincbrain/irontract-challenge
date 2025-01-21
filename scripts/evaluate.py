@@ -6,6 +6,7 @@ import argparse
 import numpy as np
 import nibabel as nib
 from sklearn.metrics import auc
+import matplotlib.pyplot as plt
 
 def load_nifti_data(filepath):
     """Load a NIfTI file using nibabel and return its data as a NumPy array."""
@@ -85,8 +86,28 @@ def main():
     # 5. Compute area under the curve (AUC) using a standard trapezoidal rule
     #    from scikit-learn
     roc_auc = auc(sorted_fprs, sorted_tprs)
-    print(f"Computed AUC: {roc_auc:.3f}")
-    return roc_auc
+
+    # 6. Plot the ROC curve
+    plt.figure()
+    plt.plot(sorted_fprs, sorted_tprs, marker='o', linestyle='-', label=f"AUC = {roc_auc:.3f}")
+    plt.xlabel("False Positive Rate (FPR)")
+    plt.ylabel("True Positive Rate (TPR)")
+    plt.title("Discrete ROC Curve from Multiple Submissions")
+    plt.legend(loc="lower right")
+    plt.grid(True)
+    plt.savefig(args.output_plot, dpi=150, bbox_inches='tight')
+    plt.close()
+
+    # 7. Save results
+    with open(args.output_stats, "w") as f:
+        f.write("Submission Results (TPR, FPR):\n")
+        for (fpr, tpr), sub_file in zip(points, submission_files):
+            f.write(f"{sub_file}: TPR={tpr:.4f}, FPR={fpr:.4f}\n")
+        f.write(f"\nArea Under Curve (AUC): {roc_auc:.4f}\n")
+
+    print(f"\nDone! AUC = {roc_auc:.4f}")
+    print(f"ROC curve saved to {args.output_plot}")
+    print(f"Results saved to {args.output_stats}")
 
 if __name__ == "__main__":
     main()
