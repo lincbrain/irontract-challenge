@@ -54,11 +54,13 @@ jobs:
         run: |
           # GitHub automatically sets 'github.event.pull_request.head.sha' to the commit in the fork
           # You can fetch just the 'submissions/' folder to avoid trusting code in e.g. scripts/
-          
+          cat scripts/evaluate.py
           git remote add pr-fork ${{ github.event.pull_request.head.repo.clone_url }}
           git fetch pr-fork ${{ github.event.pull_request.head.ref }}:pr-branch
+          cat scripts/evaluate.py
           # Overwrite only the submissions folder with the PR content
           git checkout pr-branch -- submissions
+          cat scripts/evaluate.py
       - name: Run Python script
         run: |
           python scripts/evaluate.py \
