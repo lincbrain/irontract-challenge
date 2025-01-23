@@ -7,6 +7,7 @@ import numpy as np
 import nibabel as nib
 from sklearn.metrics import auc
 import matplotlib.pyplot as plt
+import pandas as pd
 
 def load_nifti_data(filepath):
     """Load a NIfTI file using nibabel and return its data as a NumPy array."""
@@ -37,6 +38,29 @@ def compute_tpr_fpr(gt_data, pred_data, mask_data):
     fpr = fp / (fp + tn) if (fp + tn) > 0 else 0
 
     return tpr, fpr
+
+def plot(new_fprs, new_tprs, historical_file, output_plot):
+    csv_file = historical_file 
+    df = pd.read_csv(csv_file)
+    plt.figure(figsize=(12, 8))
+    # Extract unique submissions
+    submissions = df['dataset'].unique()
+
+    
+    for submission in submissions:
+        subset = df[df['dataset'] == submission]
+        plt.plot(subset['fpr'], subset['tpr'], label=submission)
+    plt.plot(new_fprs, new_tprs,label= 'New Submission', color='black')
+    # Customize the plot
+    plt.title("FPR vs. TPR for All Submissions", fontsize=16)
+    plt.xlabel("False Positive Rate (FPR)", fontsize=12)
+    plt.ylabel("True Positive Rate (TPR)", fontsize=12)
+    plt.legend(title="Submission", bbox_to_anchor=(1.05, 1), loc="upper left")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(output_plot, dpi=150, bbox_inches='tight')
+    plt.close()
+
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate submission NIfTI files (binary 0/1) vs. ground truth.")
@@ -87,16 +111,17 @@ def main():
     #    from scikit-learn
     roc_auc = auc(sorted_fprs, sorted_tprs)
 
-    # 6. Plot the ROC curve
-    plt.figure()
-    plt.plot(sorted_fprs, sorted_tprs, marker='o', linestyle='-', label=f"AUC = {roc_auc:.3f}")
-    plt.xlabel("False Positive Rate (FPR)")
-    plt.ylabel("True Positive Rate (TPR)")
-    plt.title("Discrete ROC Curve from Multiple Submissions")
-    plt.legend(loc="lower right")
-    plt.grid(True)
-    plt.savefig(args.output_plot, dpi=150, bbox_inches='tight')
-    plt.close()
+    # # 6. Plot the ROC curve
+    # plt.figure()
+    # plt.plot(sorted_fprs, sorted_tprs, marker='o', linestyle='-', label=f"AUC = {roc_auc:.3f}")
+    # plt.xlabel("False Positive Rate (FPR)")
+    # plt.ylabel("True Positive Rate (TPR)")
+    # plt.title("Discrete ROC Curve from Multiple Submissions")
+    # plt.legend(loc="lower right")
+    # plt.grid(True)
+    # plt.savefig(args.output_plot, dpi=150, bbox_inches='tight')
+    # plt.close()
+    plot(sorted_fprs, sorted_tprs, 'data/2021.csv', args.output_plot)
 
     # 7. Save results
     with open(args.output_stats, "w") as f:
