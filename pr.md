@@ -4,5 +4,5 @@
 2. Add Kaidong (GitHub username: `calvinchai`) as a collaborator to your forked repository (under `Settings` > `Collaborators`).
 3. Commit anything to the forked repo
 4. Make a PR into this repo, which will trigger the workflow
-5. I will then be able to push anything to your forked repo to test the workflow
+5. Kaidong will then be able to push changes to your forked repository to test the algorithm.
 
