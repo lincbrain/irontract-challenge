@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
 
-import os
 import argparse
+import os
 
-import numpy as np
-import nibabel as nib
-from sklearn.metrics import auc
 import matplotlib.pyplot as plt
+import nibabel as nib
+import numpy as np
 import pandas as pd
+from sklearn.metrics import auc
+
 
 def load_nifti_data(filepath):
     """Load a NIfTI file using nibabel and return its data as a NumPy array."""
     img = nib.load(filepath)
     return img.get_fdata()
+
 
 def compute_tpr_fpr(gt_data, pred_data, mask_data):
     """
@@ -39,18 +41,18 @@ def compute_tpr_fpr(gt_data, pred_data, mask_data):
 
     return tpr, fpr
 
+
 def plot(new_fprs, new_tprs, historical_file, output_plot):
-    csv_file = historical_file 
+    csv_file = historical_file
     df = pd.read_csv(csv_file)
     plt.figure(figsize=(12, 8))
     # Extract unique submissions
     submissions = df['dataset'].unique()
 
-    
     for submission in submissions:
         subset = df[df['dataset'] == submission]
         plt.plot(subset['fpr'], subset['tpr'], label=submission)
-    plt.plot(new_fprs, new_tprs,label= 'New Submission', color='black')
+    plt.plot(new_fprs, new_tprs, label='New Submission', color='black')
     # Customize the plot
     plt.title("FPR vs. TPR for All Submissions", fontsize=16)
     plt.xlabel("False Positive Rate (FPR)", fontsize=12)
@@ -63,13 +65,20 @@ def plot(new_fprs, new_tprs, historical_file, output_plot):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Evaluate submission NIfTI files (binary 0/1) vs. ground truth.")
-    parser.add_argument("--mask-file", required=True, help="Path to the NIfTI mask file.")
-    parser.add_argument("--gt-file", required=True, help="Path to the NIfTI ground-truth file (binary 0/1).")
-    parser.add_argument("--submission-folder", required=True, help="Folder containing participant NIfTI predictions.")
-    parser.add_argument("--output-plot", default="roc_curve.png", help="Filename for the saved ROC curve plot.")
-    parser.add_argument("--output-stats", default="results.txt", help="Filename to save the computed AUC and points.")
-    parser.add_argument("--threshold", type=float, default=0.3, help="Threshold for fpr.")
+    parser = argparse.ArgumentParser(
+        description="Evaluate submission NIfTI files (binary 0/1) vs. ground truth.")
+    parser.add_argument("--mask-file", required=True,
+                        help="Path to the NIfTI mask file.")
+    parser.add_argument("--gt-file", required=True,
+                        help="Path to the NIfTI ground-truth file (binary 0/1).")
+    parser.add_argument("--submission-folder", required=True,
+                        help="Folder containing participant NIfTI predictions.")
+    parser.add_argument("--output-plot", default="roc_curve.png",
+                        help="Filename for the saved ROC curve plot.")
+    parser.add_argument("--output-stats", default="results.txt",
+                        help="Filename to save the computed AUC and points.")
+    parser.add_argument("--threshold", type=float, default=0.3,
+                        help="Threshold for fpr.")
 
     args = parser.parse_args()
 
@@ -93,11 +102,11 @@ def main():
 
         # 3. Compute TPR and FPR for this submission
         tpr, fpr = compute_tpr_fpr(gt_data, pred_data, mask_data)
-        if fpr>0.3:
+        if fpr > 0.3:
             continue
         tpr_list.append(tpr)
         fpr_list.append(fpr)
-        
+
         print(f"File: {sub_file} => TPR={tpr:.3f}, FPR={fpr:.3f}")
 
     # 4. Sort the points by FPR (typical approach for computing AUC in ROC space)
@@ -112,15 +121,6 @@ def main():
     roc_auc = auc(sorted_fprs, sorted_tprs)
 
     # # 6. Plot the ROC curve
-    # plt.figure()
-    # plt.plot(sorted_fprs, sorted_tprs, marker='o', linestyle='-', label=f"AUC = {roc_auc:.3f}")
-    # plt.xlabel("False Positive Rate (FPR)")
-    # plt.ylabel("True Positive Rate (TPR)")
-    # plt.title("Discrete ROC Curve from Multiple Submissions")
-    # plt.legend(loc="lower right")
-    # plt.grid(True)
-    # plt.savefig(args.output_plot, dpi=150, bbox_inches='tight')
-    # plt.close()
     plot(sorted_fprs, sorted_tprs, 'data/2021.csv', args.output_plot)
 
     # 7. Save results
@@ -133,6 +133,7 @@ def main():
     print(f"\nDone! AUC = {roc_auc:.4f}")
     print(f"ROC curve saved to {args.output_plot}")
     print(f"Results saved to {args.output_stats}")
+
 
 if __name__ == "__main__":
     main()
