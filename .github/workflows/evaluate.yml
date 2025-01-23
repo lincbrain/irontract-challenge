@@ -75,6 +75,7 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
+          git reset
           git add results/${PR_AUTHOR}.txt results/${PR_AUTHOR}.png
           git commit -m "Add evaluation result for ${PR_AUTHOR}"
           # Push to main (requires the 'contents: write' permission)
