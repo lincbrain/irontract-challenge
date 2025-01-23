@@ -1,4 +1,6 @@
-# Instruction for Testing
+# Instructions for testing your algorithm
+
+To test the accuracy of your tractography algorithm you will need to submit a pull request to this repository.  Please see below for the detailed instructions.
 
 1. Make a fork of this repo.
 2. Add Kaidong (GitHub username: `calvinchai`) as a collaborator to your forked repository (under `Settings` > `Collaborators`).
