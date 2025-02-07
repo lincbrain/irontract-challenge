@@ -1,4 +1,13 @@
-# irontract-challenge
+# Irontract Challenge
+
+## Instructions for testing your algorithm
+
+To test the accuracy of your tractography algorithm you will need to submit a pull request to this repository.  Please see below for the detailed instructions.
+
+1. Make a fork of this repo.
+1. Save your result under the `submissions` directory.
+1. Make a PR into this repo, which will trigger the workflow
+1. Github Action will be run to test the result, and comment the result in the PR.It will also be saved in this repo.
 
 ## More information on the IronTract Challenge:
 https://irontract.mgh.harvard.edu/

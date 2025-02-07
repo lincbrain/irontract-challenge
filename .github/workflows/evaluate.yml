@@ -1,14 +1,98 @@
 name: Evaluate a new challenge entry
 run-name: ${{ github.actor }} is evaluating a new challenge entry
-on: 
-  issues:
-    types:
-      - opened
+on:
+  pull_request_target:
+    branches: [ "main" ]
+
 jobs:
-  IronTract-Evaluate:
+  evaluate:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Julia environment
-        uses: julia-actions/setup-julia@v1.9.4
-      - name: Run
-        run: julia --project src/evaluate.jl
+      - name: Check out base repo
+        uses: actions/checkout@v3
+        with:
+          ref: 'main'
+          
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          cache: 'pip' # caching pip dependencies
+      - run: pip install -r requirements.txt
+
+      - name: Cache ground truth data
+        uses: actions/cache@v3
+        id: gt-cache
+        with:
+          path: data  # local folder to store data
+          key: ${{ runner.os }}-ground-truth-v1
+
+      - name: Download DANDI Data
+        if: steps.gt-cache.outputs.cache-hit != 'true'
+        env:
+          DANDI_API_KEY: ${{ secrets.DANDI_API_KEY }}
+        working-directory: ./data
+        run: |
+          dandi download https://dandiarchive.org/dandiset/001288
+          
+      - name: Identify PR author
+        id: identify_author
+        run: echo "PR_AUTHOR=${{ github.event.pull_request.user.login }}" >> $GITHUB_ENV
+
+      - name: Fetch PR submissions
+        run: |
+          # GitHub automatically sets 'github.event.pull_request.head.sha' to the commit in the fork
+          # You can fetch just the 'submissions/' folder to avoid trusting code in e.g. scripts/
+          
+          git remote add pr-fork ${{ github.event.pull_request.head.repo.clone_url }}
+          git fetch pr-fork ${{ github.event.pull_request.head.ref }}:pr-branch
+          # Overwrite only the submissions folder with the PR content
+          git checkout pr-branch -- submissions
+      - name: Run Python script
+        run: |
+          python scripts/evaluate.py \
+             --mask-file data/001288/derivatives/micr/sub-MR243/sub-MR243_sample-brain_stain-FS_desc-mask.nii.gz \
+             --gt-file data/001288/derivatives/micr/sub-MR243/sub-MR243_sample-brain_stain-FS_desc-tracer.nii.gz \
+             --submission-folder submissions/MR243 \
+             --output-plot roc_curve.png \
+             --output-stats results.txt
+      - name: Commit results to the repo
+        run: |
+          PR_AUTHOR=${{ env.PR_AUTHOR }}
+
+          # Make a results folder if it doesn't exist
+          mkdir -p results
+
+          # Move the evaluation outputs so they are named after the PR author
+          mv results.txt results/${PR_AUTHOR}.txt
+          mv roc_curve.png results/${PR_AUTHOR}.png
+
+          # Configure git and commit
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git reset
+          git add results/${PR_AUTHOR}.txt results/${PR_AUTHOR}.png
+          git commit -m "Add evaluation result for ${PR_AUTHOR}"
+          # Push to main (requires the 'contents: write' permission)
+          git push origin HEAD:main
+          
+      - name: Comment on PR with the ROC plot
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const prNumber = ${{
+              github.event.pull_request.number
+            }};
+            const prAuthor = process.env.PR_AUTHOR;
+            // Link to the raw file in your public repo so it's displayed inline
+            const imageUrl = `https://raw.githubusercontent.com/${context.repo.owner}/${context.repo.repo}/main/results/${prAuthor}.png`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `## ROC Curve for @${prAuthor}\n` +
+                    `![ROC Curve](${imageUrl})\n\n` +
+                    `Detailed results are in [results/${prAuthor}.txt](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/results/${prAuthor}.txt).`
+            });
