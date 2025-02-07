@@ -120,7 +120,7 @@ def main():
     #    from scikit-learn
     roc_auc = auc(sorted_fprs, sorted_tprs)
 
-    # # 6. Plot the ROC curve
+    # 6. Plot the ROC curve
     plot(sorted_fprs, sorted_tprs, 'data/2021.csv', args.output_plot)
 
     # 7. Save results
