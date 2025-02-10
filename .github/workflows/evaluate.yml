@@ -56,6 +56,8 @@ jobs:
              --submission-folder submissions/MR243 \
              --output-plot roc_curve.png \
              --output-stats results.txt
+      - name: Update Leaderboard
+        run: python scripts/leaderboard.py
       - name: Commit results to the repo
         run: |
           PR_AUTHOR=${{ env.PR_AUTHOR }}
@@ -72,7 +74,7 @@ jobs:
           git config user.email "github-actions@github.com"
 
           git reset
-          git add results/${PR_AUTHOR}.txt results/${PR_AUTHOR}.png
+          git add results/${PR_AUTHOR}.txt results/${PR_AUTHOR}.png README.md
           git commit -m "Add evaluation result for ${PR_AUTHOR}"
           # Push to main (requires the 'contents: write' permission)
           git push origin HEAD:main
