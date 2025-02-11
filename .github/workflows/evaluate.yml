@@ -3,7 +3,8 @@ run-name: ${{ github.actor }} is evaluating a new challenge entry
 on:
   pull_request_target:
     branches: [ "main" ]
-
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
 jobs:
   evaluate:
     runs-on: ubuntu-latest
