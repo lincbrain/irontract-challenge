@@ -15,7 +15,10 @@ This repository allows you to evaluate the accuracy of your diffusion MRI (dMRI)
 ## Leaderboard
 
 <!-- START_LEADERBOARD -->
-_(Leaderboard will be updated automatically)_
+
+| Rank | Username | AUC Score |
+|------|----------|-----------|
+| 1 | kabilar | 0.2222 |
 
 <!-- END_LEADERBOARD -->
 
