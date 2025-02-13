@@ -18,7 +18,22 @@ This repository allows you to evaluate the accuracy of your diffusion MRI (dMRI)
 
 | Rank | Username | AUC Score |
 |------|----------|-----------|
-| 1 | kabilar | 0.2222 |
+| 1 | 2021_Team01_overall | 0.2630 |
+| 2 | 2021_Team01_hcp | 0.2425 |
+| 3 | 2021_Team02_hcp | 0.2240 |
+| 4 | kabilar | 0.2222 |
+| 5 | 2021_Team06_hcp | 0.1709 |
+| 6 | 2021_Team03_hcp | 0.1705 |
+| 7 | 2021_Team04_hcp | 0.1700 |
+| 8 | 2021_Team07_hcp | 0.1526 |
+| 9 | 2021_Team04_overall | 0.1479 |
+| 10 | 2021_Team09_overall | 0.1472 |
+| 11 | 2021_Team08_overall | 0.1284 |
+| 12 | 2021_Team08_hcp | 0.1234 |
+| 13 | 2021_Team09_hcp | 0.1204 |
+| 14 | 2021_Team05_hcp | 0.0959 |
+| 15 | 2021_Team11_hcp | 0.0911 |
+| 16 | 2021_Team12_hcp | 0.0028 |
 
 <!-- END_LEADERBOARD -->
 
