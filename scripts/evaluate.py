@@ -43,15 +43,16 @@ def compute_tpr_fpr(gt_data, pred_data, mask_data):
 
 
 def plot(new_fprs, new_tprs, historical_file, output_plot):
-    csv_file = historical_file
-    df = pd.read_csv(csv_file)
     plt.figure(figsize=(12, 8))
-    # Extract unique submissions
-    submissions = df['dataset'].unique()
+    
+    if historical_file:
+        csv_file = historical_file
+        df = pd.read_csv(csv_file)
+        submissions = df['dataset'].unique()
 
-    for submission in submissions:
-        subset = df[df['dataset'] == submission]
-        plt.plot(subset['fpr'], subset['tpr'], label=submission)
+        for submission in submissions:
+            subset = df[df['dataset'] == submission]
+            plt.plot(subset['fpr'], subset['tpr'], label=submission)
     plt.plot(new_fprs, new_tprs, label='New Submission', color='black')
     # Customize the plot
     plt.title("FPR vs. TPR for All Submissions", fontsize=16)
